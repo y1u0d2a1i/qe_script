@@ -23,13 +23,11 @@ def get_param_idx(param, lines):
     else:
         return param_idx
 
-def create_input_file(target_param,param_value, filename):
+
+def create_input_file(target_param, param_value, filename):
     with open(f'{template_path}/scf.in') as f:
         l_strip = [s.strip() for s in f.readlines()]
-        param_idx = None
-        for i, l in enumerate(l_strip):
-            if target_param in l:
-                param_idx = i
+        param_idx = get_param_idx(param=target_param, lines=l_strip)
 
     target_line = l_strip[param_idx]
     target_line = get_change_param_line(param_value, target_line)
@@ -75,7 +73,7 @@ if __name__ == '__main__':
         create_input_file(target_param=param_name,param_value=param_val, filename=input_filename)
         try:
             process = subprocess.Popen(
-                f'mpirun -np 16 pw.x -in {target_dir}/{input_filename} > {output_filename}',
+                f'mpirun -np 16 pw.x -in {target_dir}/{input_filename} > {output_dir}/{output_filename}',
                 shell=True)
             process.wait()
         except:
