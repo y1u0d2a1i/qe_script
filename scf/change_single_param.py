@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import subprocess
+from scf.scf_util import get_param_idx
 
 template_path = '/Users/y1u0d2/Desktop/Project/qe/template'
 target_dir = '/Users/y1u0d2/Desktop/Project/qe/wip'
@@ -12,16 +13,6 @@ def get_change_param_line(val, line):
     line[-1] = str(val)
     line = ' '.join(line)
     return line
-
-def get_param_idx(param, lines):
-    param_idx = None
-    for i, l in enumerate(lines):
-        if param in l:
-            param_idx = i
-    if param_idx is None:
-        raise ValueError('invalid param')
-    else:
-        return param_idx
 
 
 def create_input_file(target_param, param_value, filename):

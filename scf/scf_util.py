@@ -1,4 +1,5 @@
 import numpy as np
+import collections
 
 def get_energy_list(path_to_target, filename='scf.out', is_ev=True):
     ry_to_ev = 13.60
@@ -16,7 +17,7 @@ def get_energy_list(path_to_target, filename='scf.out', is_ev=True):
 
 def get_param_idx(param, lines):
     """
-    get param index from scf.in
+    get param index from scf.in and scf.out
     """
     param_idx = None
     for i, l in enumerate(lines):
@@ -26,3 +27,23 @@ def get_param_idx(param, lines):
         raise ValueError('invalid param')
     else:
         return param_idx
+
+
+def coord_for_poscar(coord):
+    """
+    scf.inの座標をPOSCARファイル用に変換
+    """
+    for i, line in enumerate(coord):
+        tmp = line.split(' ')[1:]
+        atom_type = line.split(' ')[0]
+        tmp.append(atom_type)
+        line = ' '.join(tmp)
+        coord[i] = line
+    return coord
+
+def flatten(l):
+    for el in l:
+        if isinstance(el, collections.abc.Iterable) and not isinstance(el, (str, bytes)):
+            yield from flatten(el)
+        else:
+            yield el
