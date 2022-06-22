@@ -4,17 +4,7 @@ import matplotlib.pyplot as plt
 import subprocess
 import random
 import os
-
-
-def get_param_idx(param, lines):
-    param_idx = None
-    for i, l in enumerate(lines):
-        if param in l:
-            param_idx = i
-    if param_idx is None:
-        raise ValueError('invalid param')
-    else:
-        return param_idx
+from scf.scf_util import get_param_idx
     
     
 def change_coord(coord:float, displacement:float) -> float:

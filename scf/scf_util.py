@@ -12,3 +12,17 @@ def get_energy_list(path_to_target, filename='scf.out', is_ev=True):
     if is_ev:
         energy_list = energy_list * ry_to_ev
     return energy_list
+
+
+def get_param_idx(param, lines):
+    """
+    get param index from scf.in
+    """
+    param_idx = None
+    for i, l in enumerate(lines):
+        if param in l:
+            param_idx = i
+    if param_idx is None:
+        raise ValueError('invalid param')
+    else:
+        return param_idx
