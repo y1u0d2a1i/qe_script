@@ -1,5 +1,6 @@
 import numpy as np
 import copy
+import glob
 from pymatgen.core import Structure
 from scf.scf_util import get_param_idx, flatten, coord_for_poscar
 
@@ -37,15 +38,16 @@ class QELattice:
         vol = np.dot(a, np.cross(b,c))
         return round(vol, 3)
     
-    def create_poscar_from_scf(self, lines):
+    def create_poscar_from_scf(self):
         coord = self.coord.copy()
         coord = coord_for_poscar(coord=coord)
-        lines = [f'Si{self.num_atom}', '1.0', self.cell, 'Si', str(self.num_atom), 'direct', coord_for_poscar(coord)]
+        lines = [f'Si{self.num_atom}', '1.0', self.cell, 'Si', str(self.num_atom), 'direct', coord]
         lines = list(flatten(lines))
         with open(f'{self.path_to_target}/POSCAR', 'w') as f:
             f.write('\n'.join(lines))
     
     def get_coord(self):
+        self.create_poscar_from_scf()
         structure = Structure.from_file(f"{self.path_to_target}/POSCAR")
         return np.array(structure.cart_coords)
     
@@ -72,3 +74,8 @@ class QELattice:
         else:
             return energy
         
+if __name__ == '__main__':
+    path2root = '/Users/y1u0d2/desktop/Lab/result/qe/change_coord/l_5.46/result'
+    dirs = glob.glob(f'{path2root}/scf*')
+    qelattice = QELattice(path_to_target=dirs[0])
+    qelattice.get_coord()

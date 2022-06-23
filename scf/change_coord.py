@@ -65,7 +65,7 @@ if __name__ == '__main__':
             )
         try:
             process = subprocess.Popen(
-                f'mpirun -np 16 pw.x -in {current_dir}/{input_filename} > {current_dir}/{output_filename}',
+                f'OMP_NUM_THREADS=4 mpirun -np 8 pw.x -in {current_dir}/{input_filename} > {current_dir}/{output_filename}',
                 shell=True)
             process.wait()
         except:
