@@ -29,6 +29,14 @@ class QELattice:
         cell_matlix = np.array([list(map(lambda x: float(x), l.split(' '))) for l in cell_matlix])
         return cell_matlix
     
+    def get_vol(self):
+        lattice = self.get_cell()
+        a = lattice[0]
+        b = lattice[1]
+        c = lattice[2]
+        vol = np.dot(a, np.cross(b,c))
+        return round(vol, 3)
+    
     def create_poscar_from_scf(self, lines):
         coord = self.coord.copy()
         coord = coord_for_poscar(coord=coord)
