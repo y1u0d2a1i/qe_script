@@ -2,11 +2,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import subprocess
-from scf.scf_util import get_param_idx
+from scf.scf_util import get_param_idx, get_energy_list
 
-template_path = '/Users/y1u0d2/Desktop/Project/qe/template'
-target_dir = '/Users/y1u0d2/Desktop/Project/qe/wip'
-output_dir = '/Users/y1u0d2/Desktop/Project/qe/template'
 
 def get_change_param_line(val, line):
     line = line.split(' ')
@@ -15,8 +12,8 @@ def get_change_param_line(val, line):
     return line
 
 
-def create_input_file(target_param, param_value, filename):
-    with open(f'{template_path}/scf.in') as f:
+def create_input_file(target_param, param_value, filename, path2template, path2target):
+    with open(f'{path2template}/scf.in') as f:
         l_strip = [s.strip() for s in f.readlines()]
         param_idx = get_param_idx(param=target_param, lines=l_strip)
 
@@ -26,23 +23,12 @@ def create_input_file(target_param, param_value, filename):
     output_lines = l_strip.copy()
     output_lines[param_idx] = target_line
     output_lines[param_idx]
-    with open(f'{target_dir}/{filename}', mode='w') as f:
+    with open(f'{path2target}/{filename}', mode='w') as f:
         f.write('\n'.join(output_lines))
 
 
-def get_energy_list(filename):
-    with open(f'{output_dir}/{filename}') as f:
-        l_strip = [s.strip() for s in f.readlines()]
-
-    l_strip = list(filter(lambda l: 'total energy' in l, l_strip))
-    l_strip = [list(filter(lambda l: l != '', line.split(' '))) for line in l_strip]
-    energy_list = [float(line[-2]) for line in l_strip if 'Ry' in line]
-    energy_list = list(dict.fromkeys(energy_list))  # 重複削除(multiprocess時)
-    return energy_list
-
-
-def plot_scf_convergence(output_filename, save_dir=None, save_filename=None):
-    energy_list = get_energy_list(output_filename)
+def plot_scf_convergence(output_filename, path2target, save_dir=None, save_filename=None):
+    energy_list = get_energy_list(path_to_target=path2target, filename=output_filename)
     x = range(1, len(energy_list) + 1)
     fig = plt.figure(figsize=(10, 6))
     ax = fig.add_subplot(111)
@@ -55,6 +41,10 @@ def plot_scf_convergence(output_filename, save_dir=None, save_filename=None):
 
 
 if __name__ == '__main__':
+    path2template = '/Users/y1u0d2/Desktop/Project/qe/template'
+    path2target = '/Users/y1u0d2/Desktop/Project/qe/wip'
+    path2out = '/Users/y1u0d2/Desktop/Project/qe/template'
+    
     param_range = [10, 20, 30, 40, 50, 60, 70]
     param_name = 'ecutwfc'
     for param_val in param_range:
@@ -64,7 +54,7 @@ if __name__ == '__main__':
         create_input_file(target_param=param_name,param_value=param_val, filename=input_filename)
         try:
             process = subprocess.Popen(
-                f'mpirun -np 16 pw.x -in {target_dir}/{input_filename} > {output_dir}/{output_filename}',
+                f'mpirun -np 8 pw.x -in {path2target}/{input_filename} > {path2out}/{output_filename}',
                 shell=True)
             process.wait()
         except:
