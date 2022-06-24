@@ -51,7 +51,11 @@ if __name__ == '__main__':
         prefix = f'scf_ecut_{param_val}'
         input_filename = f'{prefix}.in'
         output_filename = f'{prefix}.out'
-        create_input_file(target_param=param_name,param_value=param_val, filename=input_filename)
+        create_input_file(target_param=param_name,
+                          param_value=param_val, 
+                          filename=input_filename,
+                          path2template=path2template, 
+                          path2target=path2target)
         try:
             process = subprocess.Popen(
                 f'mpirun -np 8 pw.x -in {path2target}/{input_filename} > {path2out}/{output_filename}',
