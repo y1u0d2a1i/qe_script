@@ -6,11 +6,11 @@ from scf.scf_util import get_param_idx, flatten, coord_for_poscar
 
 
 class QELattice:
-    def __init__(self, path_to_target) -> None:
+    def __init__(self, path_to_target, name_scf_in='scf.in', name_scf_out='scf.out') -> None:
         self.path_to_target = path_to_target
-        with open(f'{path_to_target}/scf.in') as f:
+        with open(f'{path_to_target}/{name_scf_in}') as f:
             self.I_lines = [s.strip() for s in f.readlines()]
-        with open(f'{path_to_target}/scf.out') as f:
+        with open(f'{path_to_target}/{name_scf_out}') as f:
             self.O_lines = [s.strip() for s in f.readlines()]
         num_atom = self.I_lines[get_param_idx('nat', self.I_lines)]
         num_atom = num_atom.split(' ')[-1]

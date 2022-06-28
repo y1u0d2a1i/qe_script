@@ -135,6 +135,10 @@ dmypy.json
 wip/
 */wip/
 
+# scripts directory
+scripts/
+*/scripts/
+
 # DS_Store
 .DS_Store
 */.DS_Store
