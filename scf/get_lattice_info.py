@@ -12,6 +12,10 @@ class QELattice:
             self.I_lines = [s.strip() for s in f.readlines()]
         with open(f'{path_to_target}/{name_scf_out}') as f:
             self.O_lines = [s.strip() for s in f.readlines()]
+            
+        if 'JOB DONE.' not in self.O_lines:
+            raise Exception('invalid file')
+        
         num_atom = self.I_lines[get_param_idx('nat', self.I_lines)]
         num_atom = num_atom.split(' ')[-1]
         self.num_atom = int(num_atom)
