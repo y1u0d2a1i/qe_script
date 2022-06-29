@@ -29,6 +29,7 @@ def create_input_file(target_param, target_path, template_path, displacement):
     new_coord_lines = []
     for l in coord_lines:
         l = l.split(' ')
+        l = list(filter(None, l))
         l[1] = str(change_coord(float(l[1]), displacement))
         l[2] = str(change_coord(float(l[2]), displacement))
         l[3] = str(change_coord(float(l[3]), displacement))
@@ -42,11 +43,11 @@ def create_input_file(target_param, target_path, template_path, displacement):
 
 
 if __name__ == '__main__':
-    template_path = '/Users/y1u0d2/Desktop/Project/qe_script/template'
-    target_dir = '/Users/y1u0d2/Desktop/Project/qe_script/wip'
+    template_path = '/Users/y1u0d2/desktop/Lab/result/qe/Si/mp-165/template'
+    target_dir = '/Users/y1u0d2/desktop/Lab/result/qe/Si/mp-165/coord/l_1'
     
     param_name = 'ATOMIC_POSITIONS'
-    n_sample = 100
+    n_sample = 3
     displacement = 0.21
     for i in range(n_sample):
         current_dir = os.path.join(target_dir, f'scf_{i}')
