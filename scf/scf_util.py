@@ -47,3 +47,7 @@ def flatten(l):
             yield from flatten(el)
         else:
             yield el
+            
+
+def remove_empty_from_array(arr: list) -> list:
+    return list(filter(None, arr))

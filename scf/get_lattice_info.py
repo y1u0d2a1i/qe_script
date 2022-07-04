@@ -3,6 +3,7 @@ import copy
 import glob
 from pymatgen.core import Structure
 from scf.scf_util import get_param_idx, flatten, coord_for_poscar
+from scf.scf_util import remove_empty_from_array
 
 
 class QELattice:
@@ -31,7 +32,7 @@ class QELattice:
     
     def get_cell(self):
         cell_matlix = self.cell.copy()
-        cell_matlix = np.array([list(map(lambda x: float(x), l.split(' '))) for l in cell_matlix])
+        cell_matlix = np.array([list(map(lambda x: float(x), remove_empty_from_array(l.split(' ')))) for l in cell_matlix])
         return cell_matlix
     
     def get_vol(self):
