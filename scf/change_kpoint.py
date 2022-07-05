@@ -2,11 +2,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import subprocess
-from scf.scf_util import get_param_idx
+from scf.scf_util import get_param_idx, remove_empty_from_array
 
 
 def get_change_param_line(val, line):
-    line = line.split(' ')
+    line = remove_empty_from_array(line.split(' '))
     line[0] = str(val)
     line[1] = str(val)
     line[2] = str(val)
