@@ -79,6 +79,17 @@ class QELattice:
         else:
             return energy
         
+    
+    def get_energy_list(self, is_ev=True):
+        l_strip = self.O_lines.copy()
+        l_strip = list(filter(lambda l: 'total energy' in l, l_strip))
+        l_strip = [list(filter(lambda l: l != '', line.split(' '))) for line in l_strip]
+        energy_list = [float(line[-2]) for line in l_strip if 'Ry' in line]
+        energy_list = np.array(list(dict.fromkeys(energy_list))) #重複削除(multiprocess時)
+        if is_ev:
+            energy_list = energy_list * self.rv2ev
+        return energy_list
+        
 if __name__ == '__main__':
     path2root = '/Users/y1u0d2/desktop/Lab/result/qe/change_coord/l_5.46/result'
     dirs = glob.glob(f'{path2root}/scf*')

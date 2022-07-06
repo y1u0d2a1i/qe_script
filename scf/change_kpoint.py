@@ -46,7 +46,7 @@ if __name__ == '__main__':
             )
         try:
             process = subprocess.Popen(
-                f'OMP_NUM_THREADS=2 mpirun -np 8 pw.x -in {target_dir}/{input_filename} > {output_dir}/{output_filename}',
+                f'mpiexec.hydra -n 36 -machine $TMPDIR/machines pw.x -in {target_dir}/{input_filename} > {output_dir}/{output_filename}',
                 shell=True)
             process.wait()
         except:

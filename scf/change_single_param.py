@@ -58,7 +58,7 @@ if __name__ == '__main__':
                           path2target=path2target)
         try:
             process = subprocess.Popen(
-                f'mpirun -np 8 pw.x -in {path2target}/{input_filename} > {path2out}/{output_filename}',
+                f'mpiexec.hydra -n 36 -machine $TMPDIR/machines pw.x -in {path2target}/{input_filename} > {path2out}/{output_filename}',
                 shell=True)
             process.wait()
         except:
