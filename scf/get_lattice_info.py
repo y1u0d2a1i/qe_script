@@ -1,6 +1,9 @@
+from re import I
 import numpy as np
 import copy
 import glob
+import os
+from ase.io import read 
 from pymatgen.core import Structure
 from scf.scf_util import get_param_idx, flatten, coord_for_poscar
 from scf.scf_util import remove_empty_from_array
@@ -9,6 +12,7 @@ from scf.scf_util import remove_empty_from_array
 class QELattice:
     def __init__(self, path_to_target, name_scf_in='scf.in', name_scf_out='scf.out') -> None:
         self.path_to_target = path_to_target
+        self.name_scf_in = name_scf_in
         with open(f'{path_to_target}/{name_scf_in}') as f:
             self.I_lines = [s.strip() for s in f.readlines()]
         with open(f'{path_to_target}/{name_scf_out}') as f:
@@ -52,15 +56,19 @@ class QELattice:
             f.write('\n'.join(lines))
     
     def get_coord(self):
-        self.create_poscar_from_scf()
-        structure = Structure.from_file(f"{self.path_to_target}/POSCAR")
-        return np.array(structure.cart_coords)
+        structure = read(os.path.join(self.path_to_target, self.name_scf_in), format='espresso-in')
+        return structure.get_positions()
+        # self.create_poscar_from_scf()
+        # structure = Structure.from_file(f"{self.path_to_target}/POSCAR")
+        # return np.array(structure.cart_coords)
     
     def get_force(self):
         force_idx = get_param_idx('Forces acting on atoms (cartesian axes, Ry/au):', self.O_lines)  
         start = force_idx+2
         end = force_idx+2 + self.num_atom
+        # print(self.O_lines[start:end])
         forces = [list(filter(lambda l: l != '', line.split(' ')))[-3:] for line in self.O_lines[start:end]]
+        # print(forces)
         forces = [ np.array([float(i) for i in force]) * (self.rv2ev / self.au2ang) for force in forces]
         return np.array(forces)
     
