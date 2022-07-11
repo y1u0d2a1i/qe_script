@@ -1,6 +1,16 @@
 import numpy as np
 import collections
 
+
+def get_unit_vec(vec):
+    a = vec[0]
+    b = vec[1]
+    c = vec[2]
+    a_unit = a / np.linalg.norm(a)
+    b_unit = b / np.linalg.norm(b)
+    c_unit = c / np.linalg.norm(c)
+    return np.array([a_unit, b_unit, c_unit])
+
 def get_energy_list(path_to_target, filename='scf.out', is_ev=True):
     ry_to_ev = 13.60
     with open(f'{path_to_target}/{filename}') as f:
