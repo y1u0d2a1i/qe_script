@@ -5,7 +5,7 @@ import shutil
 
 
 def randomname(n: int) -> str:
-    """create random string of 5 characters
+    """create random string of n characters
 
     Args:
         n (int): number of characters
@@ -59,6 +59,7 @@ def add_new_structure_data(path2source: str, path2data: str) -> None:
             path2source=path2source
             )
     except:
+        print(f'already exist: {path2source}')
         return
             
     # ディレクトリの重複管理
@@ -86,3 +87,5 @@ def add_new_structure_data(path2source: str, path2data: str) -> None:
     # path.txtにデータの元を追記
     with open(os.path.join(path2target, 'path.txt'), mode='w') as f:
         f.write(path2source)
+    
+    print(f'successfully added: {path2source} to {path2target}, dir name: {id}')
