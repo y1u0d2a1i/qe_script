@@ -3,6 +3,8 @@ from plistlib import InvalidFileException
 import random, string
 import shutil
 
+from scf.get_lattice_info import QELattice
+
 
 def randomname(n: int) -> str:
     """create random string of n characters
@@ -48,6 +50,7 @@ def add_new_structure_data(path2source: str, path2data: str) -> None:
     # get structure_id(mp-*) from path2source
     try:
         structure_id = list(filter(lambda x: 'mp-' in x, path2source.split('/')))[0]
+        qel = QELattice(path_to_target=path2source)
     except InvalidFileException as e:
         print(e)
     

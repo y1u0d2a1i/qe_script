@@ -20,6 +20,9 @@ class QELattice:
             
         if 'JOB DONE.' not in self.O_lines:
             raise Exception('invalid file')
+
+        if 'convergence NOT achieved' in self.O_lines:
+            raise Exception('invalid file: convergence NOT achieved')
         
         num_atom = self.I_lines[get_param_idx('nat', self.I_lines)]
         num_atom = num_atom.split(' ')[-1]
@@ -33,11 +36,13 @@ class QELattice:
         
         self.au2ang = self.get_au2ang()
         self.rv2ev = 13.60
+
     
     def get_cell(self):
         cell_matlix = self.cell.copy()
         cell_matlix = np.array([list(map(lambda x: float(x), remove_empty_from_array(l.split(' ')))) for l in cell_matlix])
         return cell_matlix
+
     
     def get_vol(self):
         lattice = self.get_cell()
@@ -47,6 +52,7 @@ class QELattice:
         vol = np.dot(a, np.cross(b,c))
         return round(vol, 3)
     
+
     def create_poscar_from_scf(self):
         coord = self.coord.copy()
         coord = coord_for_poscar(coord=coord)
@@ -54,6 +60,7 @@ class QELattice:
         lines = list(flatten(lines))
         with open(f'{self.path_to_target}/POSCAR', 'w') as f:
             f.write('\n'.join(lines))
+
     
     def get_coord(self):
         structure = read(os.path.join(self.path_to_target, self.name_scf_in), format='espresso-in')
@@ -61,6 +68,7 @@ class QELattice:
         # self.create_poscar_from_scf()
         # structure = Structure.from_file(f"{self.path_to_target}/POSCAR")
         # return np.array(structure.cart_coords)
+
     
     def get_force(self):
         force_idx = get_param_idx('Forces acting on atoms (cartesian axes, Ry/au):', self.O_lines)  
@@ -71,6 +79,7 @@ class QELattice:
         # print(forces)
         forces = [ np.array([float(i) for i in force]) * (self.rv2ev / self.au2ang) for force in forces]
         return np.array(forces)
+
     
     def get_au2ang(self):
         lattice_constant = float(self.cell[0].split(' ')[0])
@@ -78,6 +87,7 @@ class QELattice:
         au = float(list(filter(lambda l: l != '', self.O_lines[au_idx].split(' ')))[-2])
         au2ang = lattice_constant / au
         return au2ang
+
     
     def get_energy(self, is_ev=True):
         energy_idx = get_param_idx('!', self.O_lines)
@@ -97,9 +107,3 @@ class QELattice:
         if is_ev:
             energy_list = energy_list * self.rv2ev
         return energy_list
-        
-if __name__ == '__main__':
-    path2root = '/Users/y1u0d2/desktop/Lab/result/qe/change_coord/l_5.46/result'
-    dirs = glob.glob(f'{path2root}/scf*')
-    qelattice = QELattice(path_to_target=dirs[0])
-    qelattice.get_coord()
