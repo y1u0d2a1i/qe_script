@@ -83,9 +83,10 @@ class QELattice:
     
     def get_au2ang(self):
         lattice_constant = float(self.cell[0].split(' ')[0])
-        au_idx = get_param_idx('lattice parameter (alat)', self.O_lines)
-        au = float(list(filter(lambda l: l != '', self.O_lines[au_idx].split(' ')))[-2])
-        au2ang = lattice_constant / au
+        # au_idx = get_param_idx('lattice parameter (alat)', self.O_lines)
+        # au = float(list(filter(lambda l: l != '', self.O_lines[au_idx].split(' ')))[-2])
+        # au2ang = lattice_constant / au
+        au2ang = lattice_constant
         return au2ang
 
     
