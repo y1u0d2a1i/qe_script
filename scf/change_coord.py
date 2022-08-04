@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import subprocess
 import random
 import os
-from scf.scf_util import get_param_idx
+from scf.scf_util import get_param_idx, get_unit_vec, remove_empty_from_array
     
     
 def change_coord(coord:float, displacement:float) -> float:
@@ -16,7 +16,33 @@ def change_coord(coord:float, displacement:float) -> float:
     return round(coord, 4)
 
 
-def create_input_file(target_param, target_path, template_path, displacement):
+def change_lattice(lines, l_displacement: float):
+    l_displacement = round(random.uniform(-l_displacement, l_displacement), 3)
+    target_param = 'CELL_PARAMETERS'
+    param_idx = get_param_idx(param=target_param, lines=lines)
+    lattice = lines[param_idx+1 : param_idx+1+3]
+
+    cell = []
+    for l in lattice:
+        l = remove_empty_from_array(l.split(' '))
+        l = np.array(list(map(float, l)))
+        cell.append(l)
+    cell = np.array(cell)
+
+    unit_vec = get_unit_vec(cell)
+
+    final_cell = cell + l_displacement * unit_vec
+
+    lattice = []
+    for l in final_cell:
+        l = [round(i ,4) for i in l]
+        l = list(map(str, l))
+        lattice.append(' '.join(l))
+
+    lines[param_idx + 1: param_idx + 1 + 3] = lattice
+    return lines
+
+def create_input_file(target_param, target_path, template_path, l_displacement, c_displacement):
     n_atom_param = 'nat'
     with open(f'{template_path}/scf.in') as f:
         l_strip = [s.strip() for s in f.readlines()]
@@ -24,15 +50,17 @@ def create_input_file(target_param, target_path, template_path, displacement):
         n_atom_idx = get_param_idx(param=n_atom_param, lines=l_strip)
     param_idx += 1
     n_atom = int(l_strip[n_atom_idx].split(' ')[-1])
+
+    l_strip = change_lattice(l_strip, l_displacement=l_displacement)
     
     coord_lines = l_strip[param_idx : param_idx+n_atom]
     new_coord_lines = []
     for l in coord_lines:
         l = l.split(' ')
         l = list(filter(None, l))
-        l[1] = str(change_coord(float(l[1]), displacement))
-        l[2] = str(change_coord(float(l[2]), displacement))
-        l[3] = str(change_coord(float(l[3]), displacement))
+        l[1] = str(change_coord(float(l[1]), c_displacement))
+        l[2] = str(change_coord(float(l[2]), c_displacement))
+        l[3] = str(change_coord(float(l[3]), c_displacement))
         l = ' '.join(l)
         new_coord_lines.append(l)
     
@@ -42,10 +70,11 @@ def create_input_file(target_param, target_path, template_path, displacement):
         f.write('\n'.join(output_lines))
         
 
-def change_coord_flow(path2template, path2target, n_sample, displacement, n_parallel):    
+def change_coord_flow(path2template, path2target, n_sample, l_displacement, c_displacement, n_parallel):
     param_name = 'ATOMIC_POSITIONS'
     n_sample = n_sample
-    displacement = displacement
+    c_displacement = c_displacement
+    l_displacement = l_displacement
     for i in range(n_sample):
         current_dir = os.path.join(path2target, f'scf_{i}')
         os.mkdir(current_dir)
@@ -59,7 +88,8 @@ def change_coord_flow(path2template, path2target, n_sample, displacement, n_para
             target_param=param_name,
             target_path=os.path.join(current_dir, input_filename),
             template_path=path2template,
-            displacement=displacement
+            l_displacement=l_displacement,
+            c_displacement=c_displacement
             )
         try:
             process = subprocess.Popen(
