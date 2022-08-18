@@ -23,6 +23,9 @@ class QELattice:
 
         if 'convergence NOT achieved' in self.O_lines:
             raise Exception('invalid file: convergence NOT achieved')
+
+        if 'SCF correction compared to forces is large' in self.O_lines:
+            raise Exception('Unreliable scf result')
         
         num_atom = self.I_lines[get_param_idx('nat', self.I_lines)]
         num_atom = num_atom.split(' ')[-1]
@@ -65,27 +68,19 @@ class QELattice:
     def get_coord(self):
         structure = read(os.path.join(self.path_to_target, self.name_scf_in), format='espresso-in')
         return structure.get_positions()
-        # self.create_poscar_from_scf()
-        # structure = Structure.from_file(f"{self.path_to_target}/POSCAR")
-        # return np.array(structure.cart_coords)
 
     
     def get_force(self):
         force_idx = get_param_idx('Forces acting on atoms (cartesian axes, Ry/au):', self.O_lines)  
         start = force_idx+2
         end = force_idx+2 + self.num_atom
-        # print(self.O_lines[start:end])
         forces = [list(filter(lambda l: l != '', line.split(' ')))[-3:] for line in self.O_lines[start:end]]
-        # print(forces)
         forces = [ np.array([float(i) for i in force]) * (self.rv2ev / self.au2ang) for force in forces]
         return np.array(forces)
 
     
     def get_au2ang(self):
         lattice_constant = float(self.cell[0].split(' ')[0])
-        # au_idx = get_param_idx('lattice parameter (alat)', self.O_lines)
-        # au = float(list(filter(lambda l: l != '', self.O_lines[au_idx].split(' ')))[-2])
-        # au2ang = lattice_constant / au
         au2ang = lattice_constant
         return au2ang
 
