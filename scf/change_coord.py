@@ -16,8 +16,9 @@ def change_coord(coord:float, displacement:float) -> float:
     return round(coord, 4)
 
 
-def change_lattice(lines, l_displacement: float):
-    l_displacement = round(random.uniform(-l_displacement, l_displacement), 3)
+def change_lattice(lines, l_displacement: float, is_random=True):
+    if is_random:
+        l_displacement = round(random.uniform(-l_displacement, l_displacement), 3)
     target_param = 'CELL_PARAMETERS'
     param_idx = get_param_idx(param=target_param, lines=lines)
     lattice = lines[param_idx+1 : param_idx+1+3]
@@ -68,6 +69,19 @@ def create_input_file(target_param, target_path, template_path, l_displacement, 
     output_lines[param_idx : param_idx+n_atom] = new_coord_lines
     with open(target_path, mode='w') as f:
         f.write('\n'.join(output_lines))
+
+
+def create_relax_input_file(target_param, target_path, template_path, l_displacement):
+    with open(f'{template_path}/relax.in') as f:
+        l_strip = [s.strip() for s in f.readlines()]
+        param_idx = get_param_idx(param=target_param, lines=l_strip)
+    param_idx += 1
+
+    l_strip = change_lattice(l_strip, l_displacement=l_displacement, is_random=False)
+    
+    output_lines = l_strip.copy()
+    with open(target_path, mode='w') as f:
+        f.write('\n'.join(output_lines))
         
 
 def change_coord_flow(path2template, path2target, n_sample, l_displacement, c_displacement, n_parallel):
@@ -90,6 +104,34 @@ def change_coord_flow(path2template, path2target, n_sample, l_displacement, c_di
             template_path=path2template,
             l_displacement=l_displacement,
             c_displacement=c_displacement
+            )
+        try:
+            process = subprocess.Popen(
+                f'mpiexec.hydra -n {n_parallel} -machine $TMPDIR/machines pw.x -in {current_dir}/{input_filename} > {current_dir}/{output_filename}',
+                shell=True)
+            process.wait()
+        except:
+            continue
+
+
+def relax_coord_flow(path2template, path2target, n_sample, l_displacement, n_parallel):
+    param_name = 'ATOMIC_POSITIONS'
+    n_sample = n_sample
+    linspace = np.linspace(-l_displacement, l_displacement, n_sample)
+    for i, space in enumerate(linspace):
+        current_dir = os.path.join(path2target, f'relax_{i}')
+        os.mkdir(current_dir)
+        if not os.path.exists(current_dir):
+            print(f'path not exist : {current_dir}')
+            break
+        
+        input_filename = 'relax.in'
+        output_filename = 'relax.out'
+        create_relax_input_file(
+            target_param=param_name,
+            target_path=os.path.join(current_dir, input_filename),
+            template_path=path2template,
+            l_displacement=space
             )
         try:
             process = subprocess.Popen(
