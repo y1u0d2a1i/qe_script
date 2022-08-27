@@ -70,12 +70,13 @@ class QELattice:
         return structure.get_positions()
 
     
-    def get_force(self):
+    def get_force(self, is_ev_ang=True):
         force_idx = get_param_idx('Forces acting on atoms (cartesian axes, Ry/au):', self.O_lines)  
         start = force_idx+2
         end = force_idx+2 + self.num_atom
         forces = [list(filter(lambda l: l != '', line.split(' ')))[-3:] for line in self.O_lines[start:end]]
-        forces = [ np.array([float(i) for i in force]) * (self.rv2ev / self.au2ang) for force in forces]
+        if is_ev_ang:
+            forces = [ np.array([float(i) for i in force]) * (self.rv2ev / self.au2ang) for force in forces]
         return np.array(forces)
 
     
