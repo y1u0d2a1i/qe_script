@@ -4,6 +4,7 @@ import random, string
 import shutil
 
 from scf.get_lattice_info import QELattice
+from scf.get_relax_lattice_info import RelaxQELattice
 
 
 def randomname(n: int) -> str:
@@ -40,7 +41,7 @@ def validate_scf_source(path2target: str, path2source: str, all_source_filename:
             f.write(f'\n{path2source}')
     
 
-def add_new_structure_data(path2source: str, path2data: str) -> None:
+def add_new_structure_data(path2source: str, path2data: str, is_relax=False) -> None:
     """add new structure to data list
 
     Args:
@@ -50,7 +51,10 @@ def add_new_structure_data(path2source: str, path2data: str) -> None:
     # get structure_id(mp-*) from path2source
     try:
         structure_id = list(filter(lambda x: 'mp-' in x, path2source.split('/')))[0]
-        qel = QELattice(path_to_target=path2source)
+        if is_relax:
+            qel = RelaxQELattice(path2source)
+        else:
+            qel = QELattice(path_to_target=path2source)
     except InvalidFileException as e:
         print(e)
     
@@ -79,8 +83,12 @@ def add_new_structure_data(path2source: str, path2data: str) -> None:
         
     # scf.in, scf.outのコピー 
     try:
-        shutil.copy(os.path.join(path2source, 'scf.in'), path2target)
-        shutil.copy(os.path.join(path2source, 'scf.out'), path2target)
+        if is_relax:
+            shutil.copy(os.path.join(path2source, 'relax.in'), path2target)
+            shutil.copy(os.path.join(path2source, 'relax.out'), path2target)
+        else:
+            shutil.copy(os.path.join(path2source, 'scf.in'), path2target)
+            shutil.copy(os.path.join(path2source, 'scf.out'), path2target)
     except FileNotFoundError as e:
         print(f'copy: failed: {path2source}')
         print(e)

@@ -1,5 +1,7 @@
+import numpy as np
+
 from scf.get_lattice_info import QELattice
-from scf.scf_util import get_param_idx
+from scf.scf_util import get_param_idx, remove_empty_from_array
 
 
 class RelaxQELattice(QELattice):
@@ -13,3 +15,12 @@ class RelaxQELattice(QELattice):
 
         coord_idx = get_param_idx('ATOMIC_POSITIONS', self.O_lines)
         self.coord = self.O_lines[coord_idx+1 : coord_idx+1+self.num_atom]
+    
+
+    def get_scaled_coord(self):
+        scaled_coord = []
+        for atom in self.coord:
+            atom = remove_empty_from_array(atom.split(' '))[1:]
+            scaled_coord.append([float(i) for i in atom])
+            # atom = ' '.join([float(i) for i in atom])
+        return np.array(scaled_coord)
