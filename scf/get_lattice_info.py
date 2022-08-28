@@ -17,15 +17,8 @@ class QELattice:
             self.I_lines = [s.strip() for s in f.readlines()]
         with open(f'{path_to_target}/{name_scf_out}') as f:
             self.O_lines = [s.strip() for s in f.readlines()]
-            
-        if 'JOB DONE.' not in self.O_lines:
-            raise Exception('invalid file')
-
-        if 'convergence NOT achieved' in self.O_lines:
-            raise Exception('invalid file: convergence NOT achieved')
-
-        if 'SCF correction compared to forces is large' in self.O_lines:
-            raise Exception('Unreliable scf result')
+        
+        self.validate_o_lines()
         
         num_atom = self.I_lines[get_param_idx('nat', self.I_lines)]
         num_atom = num_atom.split(' ')[-1]
@@ -39,6 +32,18 @@ class QELattice:
         
         self.au2ang = self.get_au2ang()
         self.rv2ev = 13.60
+    
+
+    def validate_o_lines(self):
+        if 'JOB DONE.' not in self.O_lines:
+            raise Exception("invalid: job didnot finished")
+            
+        for line in self.O_lines:
+            if 'convergence NOT achieved' in line:
+                raise Exception('invalid: convergence NOT achieved')
+
+            if 'SCF correction compared to forces is large' in line:
+                raise Exception('invalid: Unreliable scf result')
 
     
     def get_cell(self):
