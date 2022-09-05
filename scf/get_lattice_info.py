@@ -32,6 +32,10 @@ class QELattice:
         
         self.au2ang = self.get_au2ang()
         self.rv2ev = 13.60
+
+        self.structure_id = list(filter(lambda x: 'mp-' in x, path_to_target.split('/')))[0]
+
+        self.qeltype = 'SCF'
     
 
     def validate_o_lines(self):

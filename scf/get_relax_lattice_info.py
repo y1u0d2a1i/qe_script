@@ -13,6 +13,8 @@ class RelaxQELattice(QELattice):
     def __init__(self, path_to_target, name_relax_in='relax.in', name_relax_out='relax.out') -> None:
         super().__init__(path_to_target, name_relax_in, name_relax_out)
 
+        self.qeltype = 'RELAX'
+
         coord_idx = get_param_idx('ATOMIC_POSITIONS', self.O_lines)
         self.coord = self.O_lines[coord_idx+1 : coord_idx+1+self.num_atom]
     
