@@ -5,6 +5,7 @@ import shutil
 
 from scf.get_lattice_info import QELattice
 from scf.get_relax_lattice_info import RelaxQELattice
+from scf.qelattice import get_qel
 
 
 def randomname(n: int) -> str:
@@ -41,7 +42,7 @@ def validate_scf_source(path2target: str, path2source: str, all_source_filename:
             f.write(f'\n{path2source}')
     
 
-def add_new_structure_data(path2source: str, path2data: str, is_relax=False) -> None:
+def add_new_structure_data(path2source: str, path2data: str) -> None:
     """add new structure to data list
 
     Args:
@@ -50,11 +51,8 @@ def add_new_structure_data(path2source: str, path2data: str, is_relax=False) -> 
     """
     # get structure_id(mp-*) from path2source
     try:
-        structure_id = list(filter(lambda x: 'mp-' in x, path2source.split('/')))[0]
-        if is_relax:
-            qel = RelaxQELattice(path2source)
-        else:
-            qel = QELattice(path_to_target=path2source)
+        qel = get_qel(path2source)
+        structure_id = qel.structure_id
     except InvalidFileException as e:
         print(e)
     
@@ -83,7 +81,7 @@ def add_new_structure_data(path2source: str, path2data: str, is_relax=False) -> 
         
     # scf.in, scf.outのコピー 
     try:
-        if is_relax:
+        if qel.qeltype == 'RELAX':
             shutil.copy(os.path.join(path2source, 'relax.in'), path2target)
             shutil.copy(os.path.join(path2source, 'relax.out'), path2target)
         else:
