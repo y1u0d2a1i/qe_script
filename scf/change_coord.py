@@ -195,10 +195,9 @@ def change_dimer_coord_flow(path2template, path2target, c_displacement, n_parall
             c_displacement=c_displacement
             )
         try:
-            pass
-            # process = subprocess.Popen(
-            #     f'mpiexec.hydra -n {n_parallel} -machine $TMPDIR/machines pw.x -in {current_dir}/{input_filename} > {current_dir}/{output_filename}',
-            #     shell=True)
-            # process.wait()
+            process = subprocess.Popen(
+                f'mpiexec.hydra -n {n_parallel} -machine $TMPDIR/machines pw.x -in {current_dir}/{input_filename} > {current_dir}/{output_filename}',
+                shell=True)
+            process.wait()
         except:
             continue
