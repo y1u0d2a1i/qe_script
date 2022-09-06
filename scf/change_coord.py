@@ -1,3 +1,4 @@
+from ast import Continue
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -7,13 +8,17 @@ import os
 from scf.scf_util import get_param_idx, get_unit_vec, remove_empty_from_array
     
     
-def change_coord(coord:float, displacement:float) -> float:
-    coord = coord + round(random.uniform(0, displacement), 3)
+def change_coord(coord:float, displacement:float, is_random=True) -> float:
+    if is_random:
+        coord = coord + round(random.uniform(0, displacement), 3)
+    else:
+        coord = coord + displacement
+
     if coord > 1:
         coord = 0.99
     elif coord < 0:
         coord = 0
-    return round(coord, 4)
+    return round(coord, 6)
 
 
 def change_lattice(lines, l_displacement: float, is_random=True):
@@ -82,6 +87,35 @@ def create_relax_input_file(target_param, target_path, template_path, l_displace
     output_lines = l_strip.copy()
     with open(target_path, mode='w') as f:
         f.write('\n'.join(output_lines))
+
+
+def create_dimer_input_file(target_param, target_path, template_path, c_displacement):
+    n_atom_param = 'nat'
+    with open(f'{template_path}/scf.in') as f:
+        l_strip = [s.strip() for s in f.readlines()]
+        param_idx = get_param_idx(param=target_param, lines=l_strip)
+        n_atom_idx = get_param_idx(param=n_atom_param, lines=l_strip)
+    param_idx += 1
+    n_atom = int(l_strip[n_atom_idx].split(' ')[-1])
+    
+    coord_lines = l_strip[param_idx : param_idx+n_atom]
+    new_coord_lines = []
+    for i, l in enumerate(coord_lines):
+        if i == 0:
+            new_coord_lines.append(l)
+            continue
+        l = l.split(' ')
+        l = list(filter(None, l))
+        l[1] = str(change_coord(float(l[1]), c_displacement, is_random=False))
+        # l[2] = str(change_coord(float(l[2]), c_displacement))
+        # l[3] = str(change_coord(float(l[3]), c_displacement))
+        l = ' '.join(l)
+        new_coord_lines.append(l)
+    
+    output_lines = l_strip.copy()
+    output_lines[param_idx : param_idx+n_atom] = new_coord_lines
+    with open(target_path, mode='w') as f:
+        f.write('\n'.join(output_lines))
         
 
 def change_coord_flow(path2template, path2target, n_sample, l_displacement, c_displacement, n_parallel):
@@ -140,18 +174,13 @@ def relax_coord_flow(path2template, path2target, n_sample, l_displacement, n_par
             process.wait()
         except:
             continue
-    
 
 
-if __name__ == '__main__':
-    template_path = '/Users/y1u0d2/desktop/Lab/result/qe/Si/mp-165/template'
-    target_dir = '/Users/y1u0d2/desktop/Lab/result/qe/Si/mp-165/coord/l_1'
-    
+def change_dimer_coord_flow(path2template, path2target, c_displacement, n_parallel):
     param_name = 'ATOMIC_POSITIONS'
-    n_sample = 3
-    displacement = 0.21
-    for i in range(n_sample):
-        current_dir = os.path.join(target_dir, f'scf_{i}')
+    linspace = np.linspace(0, c_displacement, 100)[1:]
+    for i, c_displacement in enumerate(linspace):
+        current_dir = os.path.join(path2target, f'scf_{i}')
         os.mkdir(current_dir)
         if not os.path.exists(current_dir):
             print(f'path not exist : {current_dir}')
@@ -159,16 +188,17 @@ if __name__ == '__main__':
         
         input_filename = 'scf.in'
         output_filename = 'scf.out'
-        create_input_file(
+        create_dimer_input_file(
             target_param=param_name,
             target_path=os.path.join(current_dir, input_filename),
-            template_path=template_path,
-            displacement=displacement
+            template_path=path2template,
+            c_displacement=c_displacement
             )
         try:
-            process = subprocess.Popen(
-                f'OMP_NUM_THREADS=4 mpirun -np 8 pw.x -in {current_dir}/{input_filename} > {current_dir}/{output_filename}',
-                shell=True)
-            process.wait()
+            pass
+            # process = subprocess.Popen(
+            #     f'mpiexec.hydra -n {n_parallel} -machine $TMPDIR/machines pw.x -in {current_dir}/{input_filename} > {current_dir}/{output_filename}',
+            #     shell=True)
+            # process.wait()
         except:
             continue
