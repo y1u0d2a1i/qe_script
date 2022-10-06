@@ -12,8 +12,8 @@ def get_qel_from_bin(path2target, bin_filename='qel.bin'):
 
 
 def get_qel(path2target):
-    if os.path.exists(os.path.join(path2target, 'qel.bin')):
-        return get_qel_from_bin(path2target)
+    # if os.path.exists(os.path.join(path2target, 'qel.bin')):
+    #     return get_qel_from_bin(path2target)
 
     if os.path.exists(os.path.join(path2target, 'scf.in')):
         return QELattice(path2target) 
