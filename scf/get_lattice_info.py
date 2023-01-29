@@ -38,6 +38,11 @@ class QELattice:
         self.qeltype = 'SCF'
     
 
+    def get_structure(self):
+        structure = read(os.path.join(self.path_to_target, self.name_scf_in), format='espresso-in')
+        return structure
+    
+
     def validate_o_lines(self):
         if 'JOB DONE.' not in self.O_lines:
             raise Exception("invalid: job didnot finished")
@@ -90,8 +95,16 @@ class QELattice:
 
     
     def get_au2ang(self):
-        lattice_constant = float(self.cell[0].split(' ')[0])
-        au2ang = lattice_constant
+        """ Get convert factor from au(Atomic unit) to angstrom see link below.
+        https://courses.engr.illinois.edu/mse404ela/sp2019/6.DFT-walkthrough.html
+
+        Returns:
+            float: factor
+        """
+        # lattice_constant = float(self.cell[0].split(' ')[0])
+        # au2ang = lattice_constant
+        # return au2ang
+        au2ang = 0.529177211
         return au2ang
 
     
@@ -102,6 +115,9 @@ class QELattice:
             return energy * self.rv2ev
         else:
             return energy
+    
+    def get_energy_per_atom(self):
+        return self.get_energy() / self.num_atom
         
     
     def get_energy_list(self, is_ev=True):
