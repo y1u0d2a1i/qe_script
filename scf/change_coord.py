@@ -57,7 +57,8 @@ def create_input_file(target_param, target_path, template_path, l_displacement, 
     param_idx += 1
     n_atom = int(l_strip[n_atom_idx].split(' ')[-1])
 
-    l_strip = change_lattice(l_strip, l_displacement=l_displacement)
+    if l_displacement != 0:
+        l_strip = change_lattice(l_strip, l_displacement=l_displacement)
     
     coord_lines = l_strip[param_idx : param_idx+n_atom]
     new_coord_lines = []
@@ -146,8 +147,6 @@ def create_dimer_input_file(target_param, target_path, template_path, c_displace
 def change_coord_flow(path2template, path2target, n_sample, l_displacement, c_displacement, n_parallel):
     param_name = 'ATOMIC_POSITIONS'
     n_sample = n_sample
-    c_displacement = c_displacement
-    l_displacement = l_displacement
     for i in range(n_sample):
         current_dir = os.path.join(path2target, f'scf_{i}')
         os.mkdir(current_dir)
